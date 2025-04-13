@@ -4,9 +4,6 @@ import { colors } from "../utils/chalkUtils.js";
 import { logToFile } from "../logFileUtility/fileLogger.js";
 import { getCallerFilePath } from "../utils/callerFilePath.js";
 
-/**
- * Main Logger class for console and file logging
- */
 class Logger {
   /**
    * Creates a new Logger instance

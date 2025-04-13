@@ -1,2 +1,21 @@
+# Node modules and lock files
 /node_modules
 /package-lock.json
+
+# Logs (runtime logs not part of source)
+/logs
+
+# Environment variables
+.env
+
+# OS & Editor junk
+.DS_Store
+Thumbs.db
+
+# Test & debug files
+/test
+coverage
+*.log
+
+# VSCode settings (optional)
+.vscode/
