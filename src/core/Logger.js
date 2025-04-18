@@ -14,53 +14,97 @@ class Logger {
 
   /**
    * Log informational message
-   * @param {string} message - Message to log
+   * @param {...any} args - Messages or objects to log
    */
-  info(message) {
+  info(...args) {
     const timestamp = getTimestamp();
     const prefix = colors.blue(`[INFO] [${timestamp}]`);
-    console.log(`${prefix}: ${message}`);
-    this.logToFileIfNeeded(`[INFO] [${timestamp}]: ${message}`);
+    console.log(`${prefix}:`, ...args);
+    this.logToFileIfNeeded(
+      `[INFO] [${timestamp}]: ${this.formatArgsForFile(args)}`
+    );
   }
 
   /**
    * Log warning message
-   * @param {string} message - Message to log
+   * @param {...any} args - Messages or objects to log
    */
-  warn(message) {
+  warn(...args) {
     const timestamp = getTimestamp();
     const prefix = colors.yellow(`[WARN] [${timestamp}]`);
-    console.log(`${prefix}: ${message}`);
-    this.logToFileIfNeeded(`[WARN] [${timestamp}]: ${message}`);
+    console.log(`${prefix}:`, ...args);
+    this.logToFileIfNeeded(
+      `[WARN] [${timestamp}]: ${this.formatArgsForFile(args)}`
+    );
   }
 
   /**
    * Log error message with caller file path
-   * @param {string} message - Error message to log
+   * @param {...any} args - Error messages or objects to log
    */
-  error(message) {
+  error(...args) {
     const callerFilePath = getCallerFilePath();
     const timestamp = getTimestamp();
 
     const errorHeader = colors.red(`[ERROR] [${timestamp}]:`);
     const fileInfo = colors.yellow(`affected file ${callerFilePath}`);
-    const errorMessage = colors.red(message);
 
-    console.log(`${errorHeader} ${fileInfo}\n${errorMessage}`);
+    console.log(`${errorHeader} ${fileInfo}`);
+    args.forEach((arg) => {
+      if (typeof arg === "object" && arg instanceof Error) {
+        console.log(colors.red(arg.message));
+        if (arg.stack) console.log(colors.gray(arg.stack));
+      } else if (typeof arg === "object") {
+        console.log(colors.red(JSON.stringify(arg, null, 2)));
+      } else {
+        console.log(colors.red(arg));
+      }
+    });
+
     this.logToFileIfNeeded(
-      `[ERROR] [${timestamp}]: ${callerFilePath}\n${message}`
+      `[ERROR] [${timestamp}]: ${callerFilePath}\n${this.formatArgsForFile(
+        args,
+        true
+      )}`
     );
   }
 
   /**
    * Log success message
-   * @param {string} message - Message to log
+   * @param {...any} args - Messages or objects to log
    */
-  success(message) {
+  success(...args) {
     const timestamp = getTimestamp();
     const prefix = colors.green(`[SUCCESS] [${timestamp}]`);
-    console.log(`${prefix}: ${message}`);
-    this.logToFileIfNeeded(`[SUCCESS] [${timestamp}]: ${message}`);
+    console.log(`${prefix}:`, ...args);
+    this.logToFileIfNeeded(
+      `[SUCCESS] [${timestamp}]: ${this.formatArgsForFile(args)}`
+    );
+  }
+
+  /**
+   * Format arguments for file logging
+   * @private
+   * @param {Array} args - Arguments to format
+   * @param {boolean} isError - Whether this is for error logging
+   * @returns {string} Formatted string
+   */
+  formatArgsForFile(args, isError = false) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          return `${arg.message}\n${arg.stack || ""}`;
+        } else if (typeof arg === "object") {
+          try {
+            return JSON.stringify(arg, null, isError ? 2 : 0);
+          } catch (e) {
+            return "[Circular Object]";
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(isError ? "\n" : " ");
   }
 
   /**
